@@ -430,20 +430,37 @@
             box-shadow: var(--shadow-sm);
         }
 
-        .syllable:hover {
+        .full-word {
+            font-size: clamp(18px, 4vw, 28px);
+            padding: var(--space-md) var(--space-lg);
+            background-color: var(--surface-primary);
+            border-radius: var(--radius-xl);
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: all var(--duration-base);
+            user-select: none;
+            border: 2px solid transparent;
+            text-align: center;
+            box-shadow: var(--shadow-sm);
+            max-width: 100%;
+            word-wrap: break-word;
+            line-height: 1.4;
+        }
+
+        .syllable:hover, .full-word:hover {
             background-color: var(--primary-light);
             color: var(--text-inverse);
             transform: scale(1.05);
         }
 
-        .syllable.active {
+        .syllable.active, .full-word.active {
             background-color: var(--primary);
             color: var(--text-inverse);
             transform: scale(1.1);
             border-color: var(--primary-dark);
         }
 
-        .syllable.correct {
+        .syllable.correct, .full-word.correct {
             background-color: var(--success);
             color: var(--text-inverse);
             animation: correct-bounce 0.6s ease;
@@ -833,9 +850,9 @@
             <!-- Word Management (Custom Mode) -->
             <div class="word-management collapsed" id="wordManagement">
                 <div class="word-management-content">
-                    <h3>➕ Ajouter des mots personnalisés</h3>
+                    <h3>➕ Ajouter mots ou phrases</h3>
                     <div class="add-word-form">
-                        <input type="text" id="newWord" placeholder="Nouveau mot..." maxlength="15">
+                        <input type="text" id="newWord" placeholder="Mot ou phrase..." maxlength="100">
                         <button onclick="app.addCustomWord()">Ajouter</button>
                     </div>
                     <div class="custom-words" id="customWords"></div>
@@ -1353,13 +1370,23 @@
                 
                 const currentWord = this.getCurrentWord();
                 if (currentWord) {
-                    currentWord.syllables.forEach((syllable) => {
-                        const syllableElement = document.createElement('div');
-                        syllableElement.className = 'syllable';
-                        syllableElement.textContent = syllable;
-                        syllableElement.onclick = () => this.speakSyllable(syllable);
-                        wordDisplay.appendChild(syllableElement);
-                    });
+                    if (this.state.mode === 'custom') {
+                        // Custom mode: Show full word/sentence without syllable breakdown
+                        const wordElement = document.createElement('div');
+                        wordElement.className = 'full-word';
+                        wordElement.textContent = currentWord.word;
+                        wordElement.onclick = () => this.speakCurrentWord();
+                        wordDisplay.appendChild(wordElement);
+                    } else {
+                        // Levels mode: Show syllables
+                        currentWord.syllables.forEach((syllable) => {
+                            const syllableElement = document.createElement('div');
+                            syllableElement.className = 'syllable';
+                            syllableElement.textContent = syllable;
+                            syllableElement.onclick = () => this.speakSyllable(syllable);
+                            wordDisplay.appendChild(syllableElement);
+                        });
+                    }
                     
                     this.state.problemStartTime = Date.now();
                 } else {
@@ -1410,14 +1437,28 @@
 
             addCustomWord() {
                 const input = this.elements.newWord;
-                const word = input.value.trim().toLowerCase();
+                const text = input.value.trim();
                 
-                if (word && word.length >= 2) {
-                    const syllables = this.splitIntoSyllables(word);
+                if (text && text.length >= 2) {
+                    // For custom words, we don't break into syllables - treat as full word/sentence
                     const newWord = {
-                        word: word,
-                        syllables: syllables,
-                        alternates: [word, `le ${word}`, `la ${word}`, `un ${word}`, `une ${word}`, `mon ${word}`, `ma ${word}`]
+                        word: text,
+                        syllables: [text], // Store the full text as a single "syllable" for compatibility
+                        alternates: [
+                            text,
+                            text.toLowerCase(),
+                            text.charAt(0).toUpperCase() + text.slice(1).toLowerCase(),
+                            `le ${text.toLowerCase()}`,
+                            `la ${text.toLowerCase()}`,
+                            `un ${text.toLowerCase()}`,
+                            `une ${text.toLowerCase()}`,
+                            `mon ${text.toLowerCase()}`,
+                            `ma ${text.toLowerCase()}`,
+                            `je ${text.toLowerCase()}`,
+                            `tu ${text.toLowerCase()}`,
+                            `il ${text.toLowerCase()}`,
+                            `elle ${text.toLowerCase()}`
+                        ]
                     };
                     
                     this.customWords.push(newWord);
@@ -1431,7 +1472,7 @@
                         this.displayCurrentWord();
                     }
                     
-                    this.showFeedback(`✅ "${word}" ajouté!`, 'success');
+                    this.showFeedback(`✅ "${text}" ajouté!`, 'success');
                 }
             }
 
@@ -1707,9 +1748,9 @@
                     this.state.bestStreak = this.state.streak;
                 }
                 
-                // Visual feedback
-                const syllables = document.querySelectorAll('.syllable');
-                syllables.forEach(syllable => syllable.classList.add('correct'));
+                // Visual feedback - handle both syllables and full words
+                const wordElements = document.querySelectorAll('.syllable, .full-word');
+                wordElements.forEach(element => element.classList.add('correct'));
                 
                 // Show clear success feedback
                 this.showFeedback(`🎉 PARFAIT! +${points} points! 🌟`, 'success', 3000);
@@ -1725,7 +1766,7 @@
                 setTimeout(() => {
                     console.log('⏰ Auto-advancing to next word after correct answer');
                     // Clear the correct styling before moving on
-                    syllables.forEach(syllable => syllable.classList.remove('correct'));
+                    wordElements.forEach(element => element.classList.remove('correct'));
                     this.nextWord();
                 }, 2500); // Increased from 1500ms to 2500ms
             }
