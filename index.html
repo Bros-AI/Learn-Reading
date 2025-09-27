@@ -1032,19 +1032,28 @@
                 };
 
                 this.recognition.onresult = (event) => {
-                    console.log('Recognition result received');
+                    console.log('Recognition result received', event.results);
                     
-                    // Get all alternatives
+                    // Get all alternatives from the final result
                     const alternatives = [];
-                    for (let i = 0; i < event.results[0].length; i++) {
-                        alternatives.push({
-                            transcript: event.results[0][i].transcript.toLowerCase().trim(),
-                            confidence: event.results[0][i].confidence || 0.5
-                        });
-                    }
+                    const result = event.results[event.results.length - 1];
                     
-                    console.log('All alternatives:', alternatives);
-                    this.processVoiceResult(alternatives);
+                    if (result.isFinal) {
+                        for (let i = 0; i < result.length; i++) {
+                            alternatives.push({
+                                transcript: result[i].transcript.toLowerCase().trim(),
+                                confidence: result[i].confidence || 0.5
+                            });
+                        }
+                        
+                        console.log('Final alternatives:', alternatives);
+                        if (alternatives.length > 0) {
+                            this.processVoiceResult(alternatives);
+                        } else {
+                            console.log('No alternatives found');
+                            this.showFeedback("Aucune parole détectée", 'info');
+                        }
+                    }
                 };
 
                 this.recognition.onerror = (event) => {
@@ -1475,30 +1484,50 @@
             }
 
             startListening() {
-                if (!this.recognition || this.state.isListening || this.state.isProcessing) return;
+                if (!this.recognition || this.state.isListening || this.state.isProcessing) {
+                    console.log('❌ Cannot start listening:', {
+                        hasRecognition: !!this.recognition,
+                        isListening: this.state.isListening,
+                        isProcessing: this.state.isProcessing,
+                        recognitionState: this.recognitionState
+                    });
+                    return;
+                }
                 
                 try {
+                    // Force clean state
                     if (this.recognitionState === 'running') {
+                        console.log('⚠️ Recognition already running, aborting first');
                         this.recognition.abort();
                         this.recognitionState = 'stopped';
-                        setTimeout(() => this.startListening(), 100);
+                        setTimeout(() => this.startListening(), 200);
                         return;
                     }
                     
-                    console.log('Starting recognition...');
+                    console.log('🎤 Starting voice recognition...');
                     this.recognitionState = 'starting';
                     this.recognition.start();
                     this.state.voiceUsageCount++;
+                    
+                    // Safety timeout - if recognition doesn't start in 3 seconds, reset
+                    setTimeout(() => {
+                        if (this.recognitionState === 'starting') {
+                            console.log('⚠️ Recognition start timeout, resetting');
+                            this.stopListening();
+                        }
+                    }, 3000);
+                    
                 } catch (error) {
-                    console.error('Recognition start error:', error);
+                    console.error('❌ Recognition start error:', error);
                     this.recognitionState = 'stopped';
                     
                     if (error.name === 'InvalidStateError') {
+                        console.log('🔄 Retrying after InvalidStateError');
                         try {
                             this.recognition.abort();
-                            setTimeout(() => this.startListening(), 200);
+                            setTimeout(() => this.startListening(), 300);
                         } catch (abortError) {
-                            console.error('Recognition abort error:', abortError);
+                            console.error('❌ Recognition abort error:', abortError);
                             this.showFeedback('Erreur de reconnaissance vocale', 'error');
                         }
                     } else {
@@ -1508,6 +1537,8 @@
             }
 
             stopListening() {
+                console.log('🛑 Stopping voice recognition...');
+                
                 this.state.isListening = false;
                 this.state.isProcessing = false;
                 this.elements.voiceButton.classList.remove('listening', 'processing');
@@ -1516,16 +1547,30 @@
                 this.elements.voiceStatus.classList.remove('listening', 'processing');
                 this.stopOscilloscope();
                 
-                if (this.recognition && this.recognitionState === 'running') {
+                if (this.recognition && this.recognitionState !== 'stopped') {
                     try {
                         this.recognitionState = 'stopping';
                         this.recognition.stop();
+                        
+                        // Force stop after 1 second if it doesn't stop gracefully
+                        setTimeout(() => {
+                            if (this.recognitionState === 'stopping') {
+                                console.log('⚠️ Force stopping recognition');
+                                try {
+                                    this.recognition.abort();
+                                } catch (e) {
+                                    console.error('❌ Force abort error:', e);
+                                }
+                                this.recognitionState = 'stopped';
+                            }
+                        }, 1000);
+                        
                     } catch (error) {
-                        console.error('Recognition stop error:', error);
+                        console.error('❌ Recognition stop error:', error);
                         try {
                             this.recognition.abort();
                         } catch (abortError) {
-                            console.error('Recognition abort error:', abortError);
+                            console.error('❌ Recognition abort error:', abortError);
                         }
                         this.recognitionState = 'stopped';
                     }
@@ -1534,54 +1579,78 @@
 
             processVoiceResult(alternatives) {
                 const currentWord = this.getCurrentWord();
-                if (!currentWord) return;
+                if (!currentWord) {
+                    console.log('No current word available');
+                    return;
+                }
                 
-                console.log('Processing voice result for word:', currentWord.word);
-                console.log('Expected alternates:', currentWord.alternates);
+                console.log('🎯 Processing voice result for word:', currentWord.word);
+                console.log('📝 Expected alternates:', currentWord.alternates);
+                console.log('🎤 Heard alternatives:', alternatives);
                 
                 let bestMatch = false;
                 let bestScore = 0;
+                let matchDetails = '';
                 
                 // Check each spoken alternative against each expected alternate
                 for (const spokenAlt of alternatives) {
                     const normalizedSpoken = this.normalizeString(spokenAlt.transcript);
-                    console.log('Checking spoken:', normalizedSpoken, 'confidence:', spokenAlt.confidence);
+                    console.log('🔍 Checking spoken:', `"${normalizedSpoken}"`, 'confidence:', spokenAlt.confidence);
                     
                     for (const expectedAlt of currentWord.alternates) {
                         const normalizedExpected = this.normalizeString(expectedAlt);
+                        console.log('  vs expected:', `"${normalizedExpected}"`);
                         
-                        // Direct match
+                        // 1. Exact match (highest priority)
                         if (normalizedSpoken === normalizedExpected) {
-                            console.log('Direct match found!');
+                            console.log('✅ EXACT MATCH FOUND!');
                             bestMatch = true;
                             bestScore = 1.0;
+                            matchDetails = `Exact match: "${normalizedSpoken}" = "${normalizedExpected}"`;
                             break;
                         }
                         
-                        // Contains match
-                        if (normalizedSpoken.includes(normalizedExpected) || normalizedExpected.includes(normalizedSpoken)) {
-                            console.log('Contains match found!');
+                        // 2. Word contains the expected word (common case)
+                        if (normalizedSpoken.includes(normalizedExpected)) {
+                            console.log('✅ CONTAINS MATCH FOUND!');
                             bestMatch = true;
-                            bestScore = Math.max(bestScore, 0.9);
+                            bestScore = Math.max(bestScore, 0.95);
+                            matchDetails = `Contains match: "${normalizedSpoken}" contains "${normalizedExpected}"`;
                         }
                         
-                        // Similarity match
+                        // 3. Expected contains the spoken word (also valid)
+                        if (normalizedExpected.includes(normalizedSpoken)) {
+                            console.log('✅ REVERSE CONTAINS MATCH FOUND!');
+                            bestMatch = true;
+                            bestScore = Math.max(bestScore, 0.9);
+                            matchDetails = `Reverse contains: "${normalizedExpected}" contains "${normalizedSpoken}"`;
+                        }
+                        
+                        // 4. Similarity match (for small variations)
                         const similarity = this.calculateSimilarity(normalizedSpoken, normalizedExpected);
-                        console.log('Similarity with', normalizedExpected, ':', similarity);
-                        if (similarity > 0.7) {
+                        console.log('  📊 Similarity score:', similarity.toFixed(3));
+                        if (similarity > 0.65) { // More lenient threshold
                             bestMatch = true;
                             bestScore = Math.max(bestScore, similarity);
+                            matchDetails = `Similarity match: ${similarity.toFixed(3)} between "${normalizedSpoken}" and "${normalizedExpected}"`;
                         }
                     }
                     
-                    if (bestScore >= 0.9) break; // Stop if we found a very good match
+                    if (bestScore >= 0.95) {
+                        console.log('🎯 Excellent match found, stopping search');
+                        break; // Stop if we found an excellent match
+                    }
                 }
                 
-                console.log('Best match:', bestMatch, 'Best score:', bestScore);
+                console.log('📊 Final result - Best match:', bestMatch, 'Best score:', bestScore.toFixed(3));
+                console.log('📋 Match details:', matchDetails);
                 
-                if (bestMatch && bestScore > 0.7) {
+                // More lenient acceptance threshold
+                if (bestMatch && bestScore > 0.65) {
+                    console.log('🎉 ANSWER ACCEPTED!');
                     this.handleCorrectAnswer();
                 } else {
+                    console.log('❌ ANSWER REJECTED');
                     this.handleIncorrectAnswer(alternatives[0].transcript);
                 }
             }
@@ -1623,6 +1692,8 @@
             }
 
             handleCorrectAnswer() {
+                console.log('🎉 HANDLING CORRECT ANSWER');
+                
                 const responseTime = Date.now() - this.state.problemStartTime;
                 
                 this.state.correctAnswers++;
@@ -1636,10 +1707,12 @@
                     this.state.bestStreak = this.state.streak;
                 }
                 
+                // Visual feedback
                 const syllables = document.querySelectorAll('.syllable');
                 syllables.forEach(syllable => syllable.classList.add('correct'));
                 
-                this.showFeedback(`🎉 Parfait! +${points} points!`, 'success');
+                // Show clear success feedback
+                this.showFeedback(`🎉 PARFAIT! +${points} points! 🌟`, 'success', 3000);
                 this.triggerHapticFeedback();
                 
                 if (this.state.streak >= 3 && this.state.streak % 3 === 0) {
@@ -1648,25 +1721,37 @@
                 
                 this.updateStats();
                 
+                // Longer delay before auto-advancing to let user see the success
                 setTimeout(() => {
+                    console.log('⏰ Auto-advancing to next word after correct answer');
+                    // Clear the correct styling before moving on
+                    syllables.forEach(syllable => syllable.classList.remove('correct'));
                     this.nextWord();
-                }, 1500);
+                }, 2500); // Increased from 1500ms to 2500ms
             }
 
             handleIncorrectAnswer(spokenText = '') {
+                console.log('❌ HANDLING INCORRECT ANSWER');
+                
                 this.state.streak = 0;
                 this.state.totalQuestions++;
                 
                 const currentWord = this.getCurrentWord();
-                const message = spokenText ? 
-                    `😊 Presque! J'ai entendu "${spokenText}". Le mot est "${currentWord?.word}".` :
-                    `😊 Essaie encore! Le mot est "${currentWord?.word}".`;
+                let message;
                 
-                this.showFeedback(message, 'error');
+                if (spokenText && spokenText.trim()) {
+                    message = `😊 J'ai entendu "${spokenText}"\nLe mot est "${currentWord?.word}". Essayez encore!`;
+                } else {
+                    message = `😊 Essayez encore!\nLe mot est "${currentWord?.word}".`;
+                }
                 
+                this.showFeedback(message, 'error', 4000);
+                
+                // Speak the correct word after a delay
                 setTimeout(() => {
+                    console.log('🔊 Speaking correct word after incorrect answer');
                     this.speakCurrentWord();
-                }, 1000);
+                }, 1500);
                 
                 this.updateStats();
             }
