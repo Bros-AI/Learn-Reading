@@ -1,0 +1,1918 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Learn Reading - Apprenons à Lire!</title>
+    <meta name="description" content="Application interactive d'apprentissage de la lecture avec reconnaissance vocale et système de points">
+    <meta name="keywords" content="lecture, enfants, éducation, français, apprentissage, reconnaissance vocale">
+    
+    <!-- PWA Meta -->
+    <meta name="theme-color" content="#667eea">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    
+    <style>
+        /* Modern CSS Reset & Variables */
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        :root {
+            --vh: 1vh;
+            --dvh: 1dvh;
+            
+            /* Colors */
+            --primary-hue: 233;
+            --primary-saturation: 70%;
+            --primary-lightness: 65%;
+            --primary: hsl(var(--primary-hue), var(--primary-saturation), var(--primary-lightness));
+            --primary-dark: hsl(var(--primary-hue), var(--primary-saturation), calc(var(--primary-lightness) - 10%));
+            --primary-light: hsl(var(--primary-hue), var(--primary-saturation), calc(var(--primary-lightness) + 10%));
+            
+            --success: hsl(145, 60%, 45%);
+            --warning: hsl(35, 85%, 60%);
+            --error: hsl(0, 80%, 65%);
+            --info: hsl(200, 80%, 60%);
+            
+            --surface-primary: #ffffff;
+            --surface-secondary: #f7fafc;
+            --surface-tertiary: #edf2f7;
+            --surface-glass: hsla(0, 0%, 100%, 0.8);
+            --surface-overlay: hsla(0, 0%, 0%, 0.6);
+            
+            --text-primary: #1a202c;
+            --text-secondary: #4a5568;
+            --text-muted: #718096;
+            --text-inverse: #ffffff;
+            
+            /* Spacing */
+            --space-xs: 0.5rem;
+            --space-sm: 0.75rem;
+            --space-md: 1rem;
+            --space-lg: 1.5rem;
+            --space-xl: 2rem;
+            --space-2xl: 3rem;
+            
+            /* Typography */
+            --font-system: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            --text-xs: clamp(0.75rem, 0.6rem + 0.5vw, 0.875rem);
+            --text-sm: clamp(0.875rem, 0.7rem + 0.6vw, 1rem);
+            --text-base: clamp(1rem, 0.8rem + 0.7vw, 1.125rem);
+            --text-lg: clamp(1.125rem, 0.9rem + 0.8vw, 1.375rem);
+            --text-xl: clamp(1.25rem, 1rem + 1vw, 1.75rem);
+            --text-2xl: clamp(1.5rem, 1.2rem + 1.2vw, 2rem);
+            --text-3xl: clamp(1.875rem, 1.5rem + 1.5vw, 2.5rem);
+            --text-4xl: clamp(2.25rem, 1.8rem + 1.8vw, 3rem);
+            
+            /* Shadows */
+            --shadow-sm: 0 2px 4px hsla(0, 0%, 0%, 0.05);
+            --shadow-md: 0 4px 8px hsla(0, 0%, 0%, 0.1);
+            --shadow-lg: 0 10px 20px hsla(0, 0%, 0%, 0.1);
+            --shadow-xl: 0 20px 40px hsla(0, 0%, 0%, 0.1);
+            --shadow-focus: 0 0 0 3px hsla(var(--primary-hue), var(--primary-saturation), var(--primary-lightness), 0.3);
+            --shadow-glow: 0 0 20px hsla(var(--primary-hue), var(--primary-saturation), var(--primary-lightness), 0.3);
+            
+            /* Border Radius */
+            --radius-sm: 4px;
+            --radius-md: 8px;
+            --radius-lg: 12px;
+            --radius-xl: 16px;
+            --radius-2xl: 24px;
+            --radius-full: 9999px;
+            
+            /* Transitions */
+            --ease-out-quad: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            --ease-in-out-cubic: cubic-bezier(0.65, 0, 0.35, 1);
+            --duration-fast: 200ms;
+            --duration-base: 300ms;
+            --duration-slow: 500ms;
+            
+            /* Z-index */
+            --z-base: 0;
+            --z-dropdown: 1000;
+            --z-sticky: 1100;
+            --z-fixed: 1200;
+            --z-modal: 1400;
+            --z-toast: 1500;
+            
+            /* Safe Areas */
+            --safe-top: env(safe-area-inset-top, 0px);
+            --safe-bottom: env(safe-area-inset-bottom, 0px);
+            --safe-left: env(safe-area-inset-left, 0px);
+            --safe-right: env(safe-area-inset-right, 0px);
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --surface-primary: #1a202c;
+                --surface-secondary: #121826;
+                --surface-tertiary: #2d3748;
+                --surface-glass: hsla(222, 27%, 15%, 0.8);
+                --text-primary: #f7fafc;
+                --text-secondary: #e2e8f0;
+                --text-muted: #a0aec0;
+                --shadow-sm: 0 2px 4px hsla(0, 0%, 0%, 0.15);
+                --shadow-md: 0 4px 8px hsla(0, 0%, 0%, 0.25);
+                --shadow-lg: 0 10px 20px hsla(0, 0%, 0%, 0.25);
+            }
+        }
+
+        /* Base Styles */
+        html {
+            font-size: 16px;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            touch-action: manipulation;
+        }
+
+        body {
+            font-family: var(--font-system);
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+            min-height: var(--dvh, 100vh);
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Ambient Background */
+        .ambient-bg {
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+            overflow: hidden;
+            opacity: 0.3;
+        }
+
+        .gradient-orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(100px);
+            opacity: 0.6;
+            animation: float 25s infinite ease-in-out alternate;
+        }
+
+        .orb-1 {
+            width: clamp(200px, 50vw, 400px);
+            height: clamp(200px, 50vw, 400px);
+            background: radial-gradient(circle, hsl(var(--primary-hue), 90%, 70%) 0%, transparent 70%);
+            top: -15%; left: -15%;
+        }
+
+        .orb-2 {
+            width: clamp(250px, 60vw, 500px);
+            height: clamp(250px, 60vw, 500px);
+            background: radial-gradient(circle, hsl(35, 90%, 70%) 0%, transparent 70%);
+            bottom: -20%; right: -20%;
+            animation-delay: -8s;
+        }
+
+        .orb-3 {
+            width: clamp(150px, 40vw, 300px);
+            height: clamp(150px, 40vw, 300px);
+            background: radial-gradient(circle, hsl(145, 80%, 65%) 0%, transparent 70%);
+            top: 40%; left: 45%;
+            transform: translate(-50%, -50%);
+            animation-delay: -16s;
+        }
+
+        /* App Container */
+        .app-container {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            min-height: var(--dvh, 100vh);
+            max-width: 700px;
+            margin: 0 auto;
+            padding-left: var(--safe-left);
+            padding-right: var(--safe-right);
+            position: relative;
+        }
+
+        /* Header */
+        .app-header {
+            position: sticky;
+            top: 0;
+            padding-top: var(--safe-top);
+            z-index: var(--z-sticky);
+            background-color: var(--surface-glass);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid hsla(0, 0%, 50%, 0.1);
+        }
+
+        .header-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: var(--space-sm) var(--space-md);
+            min-height: 56px;
+        }
+
+        .app-title {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            font-size: var(--text-xl);
+            font-weight: 800;
+            color: var(--text-primary);
+        }
+
+        .title-icon {
+            font-size: var(--text-2xl);
+            animation: bounce 2.5s infinite ease-in-out;
+        }
+
+        .title-text {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Stats Bar */
+        .stats-bar {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: var(--space-sm) var(--space-md);
+            margin: var(--space-md);
+            background-color: var(--surface-glass);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .stat-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: var(--space-xs);
+            text-align: center;
+        }
+
+        .stat-icon { 
+            font-size: var(--text-lg); 
+            color: var(--primary); 
+        }
+
+        .stat-value { 
+            font-size: var(--text-sm); 
+            font-weight: 700; 
+            color: var(--text-primary); 
+        }
+
+        /* Level Display */
+        .level-display {
+            text-align: center;
+            padding: var(--space-md);
+            margin: 0 var(--space-md);
+            background-color: var(--surface-glass);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .level-text {
+            font-size: var(--text-lg);
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: var(--space-xs);
+        }
+
+        .progress-container {
+            width: 100%;
+            height: 8px;
+            background-color: var(--surface-tertiary);
+            border-radius: var(--radius-full);
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary-light) 0%, var(--primary) 100%);
+            border-radius: var(--radius-full);
+            transition: width var(--duration-slow) var(--ease-in-out-cubic);
+            width: 0%;
+        }
+
+        /* Game Area */
+        .game-area {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            padding: var(--space-md);
+            padding-bottom: calc(160px + var(--safe-bottom));
+        }
+
+        /* Word Card */
+        .word-card {
+            background-color: var(--surface-primary);
+            border-radius: var(--radius-xl);
+            padding: var(--space-xl);
+            margin-bottom: var(--space-lg);
+            box-shadow: var(--shadow-lg);
+            position: relative;
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            transition: transform var(--duration-base) var(--ease-out-quad);
+        }
+
+        .word-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-xl);
+        }
+
+        .word-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: var(--space-sm);
+            margin-bottom: var(--space-lg);
+        }
+
+        .syllable {
+            font-size: clamp(28px, 8vw, 48px);
+            padding: var(--space-sm) var(--space-md);
+            background-color: var(--surface-secondary);
+            border-radius: var(--radius-lg);
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: all var(--duration-base) var(--ease-out-quad);
+            user-select: none;
+            border: 2px solid transparent;
+            min-width: 60px;
+            text-align: center;
+        }
+
+        .syllable:hover {
+            background-color: var(--primary-light);
+            color: var(--text-inverse);
+            transform: scale(1.05);
+        }
+
+        .syllable.active {
+            background-color: var(--primary);
+            color: var(--text-inverse);
+            transform: scale(1.1);
+            border-color: var(--primary-dark);
+        }
+
+        .syllable.correct {
+            background-color: var(--success);
+            color: var(--text-inverse);
+            animation: correct-bounce 0.6s var(--ease-out-quad);
+        }
+
+        .hint-text {
+            font-size: var(--text-sm);
+            color: var(--text-muted);
+            margin-bottom: var(--space-md);
+        }
+
+        /* Voice Input Area */
+        .voice-input-area {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: var(--space-md);
+            margin-bottom: var(--space-lg);
+        }
+
+        .voice-button {
+            width: clamp(120px, 30vw, 160px);
+            height: clamp(120px, 30vw, 160px);
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            border: none;
+            color: var(--text-inverse);
+            position: relative;
+            cursor: pointer;
+            box-shadow: var(--shadow-lg);
+            transition: all var(--duration-fast) var(--ease-out-quad);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        .voice-button:hover {
+            transform: scale(1.05);
+            box-shadow: var(--shadow-xl), var(--shadow-glow);
+        }
+
+        .voice-button:active {
+            transform: scale(0.95);
+        }
+
+        .voice-button.listening {
+            animation: pulse-ring 1.5s infinite ease-out;
+            background: linear-gradient(135deg, var(--warning) 0%, hsl(35, 85%, 50%) 100%);
+        }
+
+        .voice-button.processing {
+            background: linear-gradient(135deg, var(--info) 0%, hsl(200, 80%, 50%) 100%);
+            animation: spin 1s linear infinite;
+        }
+
+        .mic-icon {
+            font-size: clamp(36px, 8vw, 48px);
+            position: relative;
+            z-index: 2;
+        }
+
+        .voice-wave {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .voice-wave span {
+            width: 4px;
+            background-color: var(--text-inverse);
+            border-radius: var(--radius-full);
+            animation: wave 1.2s ease-in-out infinite;
+        }
+
+        .voice-wave span:nth-child(1) { animation-delay: 0s; }
+        .voice-wave span:nth-child(2) { animation-delay: 0.15s; }
+        .voice-wave span:nth-child(3) { animation-delay: 0.3s; }
+        .voice-wave span:nth-child(4) { animation-delay: 0.45s; }
+        .voice-wave span:nth-child(5) { animation-delay: 0.6s; }
+
+        .voice-status {
+            font-size: var(--text-base);
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-align: center;
+        }
+
+        .voice-status.listening {
+            color: var(--warning);
+        }
+
+        .voice-status.processing {
+            color: var(--info);
+        }
+
+        /* Oscilloscope */
+        .oscilloscope-container {
+            width: 100%;
+            max-width: 400px;
+            height: 120px;
+            background-color: var(--surface-secondary);
+            border-radius: var(--radius-lg);
+            border: 2px solid var(--primary);
+            overflow: hidden;
+            position: relative;
+            margin: var(--space-md) 0;
+        }
+
+        .oscilloscope-canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .oscilloscope-grid {
+            position: absolute;
+            inset: 0;
+            background-image: 
+                linear-gradient(to right, hsla(var(--primary-hue), 50%, 50%, 0.1) 1px, transparent 1px),
+                linear-gradient(to bottom, hsla(var(--primary-hue), 50%, 50%, 0.1) 1px, transparent 1px);
+            background-size: 20px 20px;
+            pointer-events: none;
+        }
+
+        /* Word Management */
+        .word-management {
+            background-color: var(--surface-primary);
+            border-radius: var(--radius-xl);
+            padding: var(--space-lg);
+            margin-bottom: var(--space-lg);
+            box-shadow: var(--shadow-md);
+        }
+
+        .word-management h3 {
+            font-size: var(--text-lg);
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: var(--space-md);
+            text-align: center;
+        }
+
+        .add-word-form {
+            display: flex;
+            gap: var(--space-sm);
+            margin-bottom: var(--space-md);
+        }
+
+        .add-word-form input {
+            flex: 1;
+            padding: var(--space-sm) var(--space-md);
+            border: 2px solid var(--surface-tertiary);
+            border-radius: var(--radius-md);
+            font-size: var(--text-base);
+            background-color: var(--surface-secondary);
+            color: var(--text-primary);
+            transition: border-color var(--duration-fast) var(--ease-out-quad);
+        }
+
+        .add-word-form input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .add-word-form button {
+            padding: var(--space-sm) var(--space-md);
+            background-color: var(--primary);
+            color: var(--text-inverse);
+            border: none;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            font-weight: 600;
+            transition: background-color var(--duration-fast) var(--ease-out-quad);
+        }
+
+        .add-word-form button:hover {
+            background-color: var(--primary-dark);
+        }
+
+        .custom-words {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--space-xs);
+            justify-content: center;
+        }
+
+        .custom-word-tag {
+            background-color: var(--surface-secondary);
+            color: var(--text-primary);
+            padding: var(--space-xs) var(--space-sm);
+            border-radius: var(--radius-full);
+            font-size: var(--text-sm);
+            display: flex;
+            align-items: center;
+            gap: var(--space-xs);
+        }
+
+        .remove-word {
+            background-color: var(--error);
+            color: var(--text-inverse);
+            border: none;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Feedback Display */
+        .feedback-display {
+            min-height: 48px;
+            padding: var(--space-md);
+            border-radius: var(--radius-lg);
+            text-align: center;
+            font-size: var(--text-base);
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all var(--duration-base) var(--ease-out-quad);
+            margin-bottom: var(--space-md);
+            box-shadow: var(--shadow-md);
+        }
+
+        .feedback-display.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .feedback-display.success {
+            background-color: var(--success);
+            color: var(--text-inverse);
+        }
+
+        .feedback-display.error {
+            background-color: var(--error);
+            color: var(--text-inverse);
+        }
+
+        .feedback-display.info {
+            background-color: var(--info);
+            color: var(--text-inverse);
+        }
+
+        /* Bottom Controls */
+        .bottom-controls {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: var(--z-fixed);
+            background: linear-gradient(to top, var(--surface-secondary) 70%, transparent 100%);
+            padding: var(--space-md);
+            padding-bottom: calc(var(--space-md) + var(--safe-bottom));
+            padding-left: calc(var(--space-md) + var(--safe-left));
+            padding-right: calc(var(--space-md) + var(--safe-right));
+        }
+
+        .control-buttons {
+            display: flex;
+            justify-content: center;
+            gap: var(--space-md);
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .control-btn {
+            padding: var(--space-md) var(--space-lg);
+            border: none;
+            border-radius: var(--radius-lg);
+            font-size: var(--text-base);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all var(--duration-fast) var(--ease-out-quad);
+            min-height: 48px;
+            display: flex;
+            align-items: center;
+            gap: var(--space-xs);
+        }
+
+        .control-btn.primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: var(--text-inverse);
+            box-shadow: var(--shadow-md);
+        }
+
+        .control-btn.primary:hover {
+            background: linear-gradient(135deg, var(--primary-light) 0%, var(--primary) 100%);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .control-btn.secondary {
+            background-color: var(--surface-primary);
+            color: var(--text-primary);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .control-btn.secondary:hover {
+            background-color: var(--surface-tertiary);
+            transform: translateY(-2px);
+        }
+
+        /* Confetti */
+        .confetti-container {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: var(--z-toast);
+        }
+
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            opacity: 0.9;
+            animation: confetti-fall 3s linear forwards;
+        }
+
+        .confetti:nth-child(2n) { 
+            background-color: var(--success); 
+            border-radius: 50%; 
+        }
+        
+        .confetti:nth-child(3n) { 
+            background-color: var(--warning); 
+            transform: rotate(45deg); 
+        }
+        
+        .confetti:nth-child(4n) { 
+            background-color: var(--info); 
+            width: 5px; 
+            height: 15px;
+        }
+        
+        .confetti:nth-child(5n) { 
+            background-color: var(--error); 
+        }
+
+        /* Achievement Toast */
+        .achievement-toast {
+            position: fixed;
+            top: calc(var(--safe-top) + var(--space-md));
+            left: 50%;
+            transform: translate(-50%, -200%);
+            background-color: var(--surface-primary);
+            border-radius: var(--radius-xl);
+            padding: var(--space-md) var(--space-lg);
+            box-shadow: var(--shadow-xl);
+            z-index: var(--z-toast);
+            transition: transform var(--duration-slow) var(--ease-in-out-cubic);
+            max-width: calc(100% - var(--space-lg));
+            min-width: 280px;
+            pointer-events: none;
+        }
+
+        .achievement-toast.visible {
+            transform: translate(-50%, 0);
+        }
+
+        .achievement-content {
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+        }
+
+        .achievement-icon {
+            font-size: var(--text-3xl);
+        }
+
+        .achievement-text h3 {
+            font-size: var(--text-lg);
+            font-weight: 700;
+            margin-bottom: var(--space-xs);
+            color: var(--text-primary);
+        }
+
+        .achievement-text p {
+            font-size: var(--text-sm);
+            color: var(--text-secondary);
+        }
+
+        /* Utility Classes */
+        .hidden {
+            display: none !important;
+        }
+
+        .loading {
+            opacity: 0.7;
+            pointer-events: none;
+        }
+
+        /* Animations */
+        @keyframes float {
+            0% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(20px, -20px) scale(1.05); }
+            100% { transform: translate(0, 0) scale(1); }
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0) rotate(-5deg); }
+            50% { transform: translateY(-8px) rotate(5deg); }
+        }
+
+        @keyframes pulse-ring {
+            0% { 
+                box-shadow: var(--shadow-lg), 0 0 0 0 hsla(var(--primary-hue), var(--primary-saturation), var(--primary-lightness), 0.7); 
+            }
+            70% { 
+                box-shadow: var(--shadow-lg), 0 0 0 20px hsla(var(--primary-hue), var(--primary-saturation), var(--primary-lightness), 0); 
+            }
+            100% { 
+                box-shadow: var(--shadow-lg), 0 0 0 0 hsla(var(--primary-hue), var(--primary-saturation), var(--primary-lightness), 0); 
+            }
+        }
+
+        @keyframes wave {
+            0%, 100% { height: 10px; opacity: 0.5; }
+            50% { height: 30px; opacity: 1; }
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes correct-bounce {
+            0%, 100% { transform: scale(1); }
+            30% { transform: scale(1.1); }
+            60% { transform: scale(0.95); }
+        }
+
+        @keyframes confetti-fall {
+            0% { 
+                transform: translateY(-10vh) translateX(0) rotate(0deg); 
+                opacity: 1; 
+            }
+            100% { 
+                transform: translateY(120vh) translateX(50vw) rotate(720deg); 
+                opacity: 0; 
+            }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 480px) {
+            .add-word-form {
+                flex-direction: column;
+            }
+
+            .control-buttons {
+                flex-direction: column;
+                gap: var(--space-sm);
+            }
+
+            .stats-bar {
+                padding: var(--space-xs) var(--space-sm);
+            }
+
+            .stat-item {
+                gap: 2px;
+            }
+
+            .stat-icon {
+                font-size: var(--text-base);
+            }
+
+            .stat-value {
+                font-size: var(--text-xs);
+            }
+        }
+
+        @media (orientation: landscape) and (max-height: 500px) {
+            .word-card {
+                min-height: 140px;
+                padding: var(--space-md);
+            }
+
+            .voice-button {
+                width: 100px;
+                height: 100px;
+            }
+
+            .game-area {
+                padding-bottom: calc(120px + var(--safe-bottom));
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+            
+            .gradient-orb {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Ambient Background -->
+    <div class="ambient-bg">
+        <div class="gradient-orb orb-1"></div>
+        <div class="gradient-orb orb-2"></div>
+        <div class="gradient-orb orb-3"></div>
+    </div>
+    
+    <!-- Confetti Container -->
+    <div id="confetti-container" class="confetti-container"></div>
+    
+    <!-- Main App Container -->
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-content">
+                <h1 class="app-title">
+                    <span class="title-icon">📚</span>
+                    <span class="title-text">Learn Reading</span>
+                </h1>
+            </div>
+        </header>
+
+        <!-- Stats Bar -->
+        <section class="stats-bar">
+            <div class="stat-item">
+                <span class="stat-icon">🏆</span>
+                <span id="score" class="stat-value">0</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-icon">🔥</span>
+                <span id="streak" class="stat-value">0</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-icon">🎯</span>
+                <span id="accuracy" class="stat-value">100%</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-icon">⏱️</span>
+                <span id="timer" class="stat-value">0:00</span>
+            </div>
+        </section>
+
+        <!-- Level Display -->
+        <section class="level-display">
+            <div class="level-text">Niveau: <span id="level">1</span></div>
+            <div class="progress-container">
+                <div class="progress-bar" id="progressBar"></div>
+            </div>
+        </section>
+
+        <!-- Game Area -->
+        <section class="game-area">
+            <!-- Word Management -->
+            <div class="word-management">
+                <h3>➕ Ajouter des mots personnalisés</h3>
+                <div class="add-word-form">
+                    <input type="text" id="newWord" placeholder="Entrez un nouveau mot..." maxlength="20">
+                    <button onclick="addCustomWord()">Ajouter</button>
+                </div>
+                <div class="custom-words" id="customWords"></div>
+            </div>
+
+            <!-- Word Card -->
+            <div class="word-card">
+                <div id="wordDisplay" class="word-container"></div>
+                <div class="hint-text">👆 Cliquez sur chaque syllabe pour l'entendre</div>
+                
+                <!-- Voice Input Area -->
+                <div class="voice-input-area">
+                    <div class="oscilloscope-container">
+                        <div class="oscilloscope-grid"></div>
+                        <canvas id="oscilloscope" class="oscilloscope-canvas" width="400" height="120"></canvas>
+                    </div>
+                    
+                    <button class="voice-button" id="voiceButton">
+                        <span class="mic-icon">🎤</span>
+                        <div class="voice-wave hidden" id="voiceWave">
+                            <span></span><span></span><span></span><span></span><span></span>
+                        </div>
+                    </button>
+                    
+                    <div class="voice-status" id="voiceStatus">
+                        <strong>📱 Appuyez et maintenez pour parler</strong>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Feedback Display -->
+            <div id="feedback" class="feedback-display"></div>
+        </section>
+    </div>
+
+    <!-- Bottom Controls -->
+    <div class="bottom-controls">
+        <div class="control-buttons">
+            <button class="control-btn secondary" onclick="speakCurrentWord()">
+                🔊 Écouter
+            </button>
+            <button class="control-btn primary" onclick="nextWord()">
+                ▶️ Suivant
+            </button>
+            <button class="control-btn secondary" onclick="resetProgress()">
+                🔄 Recommencer
+            </button>
+        </div>
+    </div>
+
+    <!-- Achievement Toast -->
+    <div id="achievementToast" class="achievement-toast hidden">
+        <div class="achievement-content">
+            <span class="achievement-icon">🏆</span>
+            <div class="achievement-text">
+                <h3 id="achievementTitle">Succès débloqué!</h3>
+                <p id="achievementDesc">Description du succès</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class FrenchLearningApp {
+            constructor() {
+                this.CONFIG = {
+                    SESSION_LENGTH: 10,
+                    CONFETTI_COUNT: 50,
+                    CONFETTI_DURATION: 3500,
+                    FEEDBACK_DURATION: 3000,
+                    SPEECH_RATE: 0.8,
+                    VOICE_CONFIDENCE_THRESHOLD: 0.65,
+                    LONG_PRESS_DURATION: 150,
+                    TAP_THRESHOLD: 15,
+                    ACHIEVEMENTS: {
+                        FIRST_CORRECT: { name: "Premiers pas!", description: "Première bonne réponse!", icon: "🎯" },
+                        STREAK_5: { name: "En feu!", description: "5 bonnes réponses d'affilée!", icon: "🔥" },
+                        STREAK_10: { name: "Expert!", description: "10 bonnes réponses d'affilée!", icon: "👑" },
+                        VOICE_MASTER: { name: "Maître vocal!", description: "Utilisé la voix 10 fois!", icon: "🎤" },
+                        SPEED_DEMON: { name: "Éclair!", description: "Réponse en moins de 3 secondes!", icon: "⚡" },
+                        PERFECT_SESSION: { name: "Parfait!", description: "100% de réussite!", icon: "💯" }
+                    }
+                };
+
+                this.defaultLevels = {
+                    1: [
+                        { word: "papa", syllables: ["pa", "pa"], alternates: ["papa", "papa!", "le papa"] },
+                        { word: "maman", syllables: ["ma", "man"], alternates: ["maman", "maman!", "la maman"] },
+                        { word: "bébé", syllables: ["bé", "bé"], alternates: ["bébé", "bébé!", "le bébé"] }
+                    ],
+                    2: [
+                        { word: "maison", syllables: ["mai", "son"], alternates: ["maison", "la maison", "une maison"] },
+                        { word: "voiture", syllables: ["voi", "ture"], alternates: ["voiture", "la voiture", "une voiture"] },
+                        { word: "jardin", syllables: ["jar", "din"], alternates: ["jardin", "le jardin", "un jardin"] }
+                    ],
+                    3: [
+                        { word: "papillon", syllables: ["pa", "pi", "llon"], alternates: ["papillon", "le papillon", "un papillon"] },
+                        { word: "chocolat", syllables: ["cho", "co", "lat"], alternates: ["chocolat", "le chocolat", "du chocolat"] },
+                        { word: "éléphant", syllables: ["é", "lé", "phant"], alternates: ["éléphant", "l'éléphant", "un éléphant"] }
+                    ]
+                };
+
+                this.initializeApp();
+            }
+
+            async initializeApp() {
+                this.initializeElements();
+                this.initializeState();
+                await this.loadSavedData();
+                await this.initializeSpeechSystems();
+                this.setupEventListeners();
+                this.setupOscilloscope();
+                this.initializeUI();
+                console.log('French Learning App Initialized Successfully');
+            }
+
+            initializeElements() {
+                this.elements = {
+                    score: document.getElementById('score'),
+                    streak: document.getElementById('streak'),
+                    accuracy: document.getElementById('accuracy'),
+                    timer: document.getElementById('timer'),
+                    level: document.getElementById('level'),
+                    progressBar: document.getElementById('progressBar'),
+                    wordDisplay: document.getElementById('wordDisplay'),
+                    voiceButton: document.getElementById('voiceButton'),
+                    voiceWave: document.getElementById('voiceWave'),
+                    voiceStatus: document.getElementById('voiceStatus'),
+                    feedback: document.getElementById('feedback'),
+                    newWord: document.getElementById('newWord'),
+                    customWords: document.getElementById('customWords'),
+                    confettiContainer: document.getElementById('confetti-container'),
+                    achievementToast: document.getElementById('achievementToast'),
+                    achievementTitle: document.getElementById('achievementTitle'),
+                    achievementDesc: document.getElementById('achievementDesc'),
+                    oscilloscope: document.getElementById('oscilloscope')
+                };
+
+                this.oscilloscope = {
+                    canvas: this.elements.oscilloscope,
+                    ctx: this.elements.oscilloscope.getContext('2d'),
+                    animationId: null
+                };
+            }
+
+            initializeState() {
+                this.state = {
+                    currentLevel: 1,
+                    currentIndex: 0,
+                    score: 0,
+                    streak: 0,
+                    bestStreak: 0,
+                    totalQuestions: 0,
+                    correctAnswers: 0,
+                    sessionQuestions: 0,
+                    voiceUsageCount: 0,
+                    isListening: false,
+                    isProcessing: false,
+                    micPermissionGranted: false,
+                    achievements: new Set(),
+                    sessionStartTime: null,
+                    problemStartTime: null
+                };
+
+                // Add recognition state tracking
+                this.recognitionState = 'stopped'; // 'stopped', 'starting', 'running', 'stopping'
+                
+                this.levels = JSON.parse(JSON.stringify(this.defaultLevels));
+                this.customWords = JSON.parse(localStorage.getItem('frenchApp_customWords') || '[]');
+                this.timers = { session: null, feedback: null, achievement: null };
+            }
+
+            async loadSavedData() {
+                const savedAchievements = localStorage.getItem('frenchApp_achievements');
+                if (savedAchievements) {
+                    this.state.achievements = new Set(JSON.parse(savedAchievements));
+                }
+                
+                const savedStats = localStorage.getItem('frenchApp_stats');
+                if (savedStats) {
+                    const stats = JSON.parse(savedStats);
+                    this.state.bestStreak = stats.bestStreak || 0;
+                }
+            }
+
+            async initializeSpeechSystems() {
+                this.synth = window.speechSynthesis;
+                
+                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                if (SpeechRecognition) {
+                    this.recognition = new SpeechRecognition();
+                    this.setupSpeechRecognition();
+                } else {
+                    console.warn('Speech recognition not supported');
+                    this.elements.voiceButton.disabled = true;
+                }
+            }
+
+            setupSpeechRecognition() {
+                this.recognition.lang = 'fr-FR';
+                this.recognition.continuous = false;
+                this.recognition.interimResults = false;
+                this.recognition.maxAlternatives = 3;
+
+                this.recognition.onstart = () => {
+                    this.recognitionState = 'running';
+                    this.state.isListening = true;
+                    this.elements.voiceButton.classList.add('listening');
+                    this.elements.voiceWave.classList.remove('hidden');
+                    this.elements.voiceStatus.textContent = "🎤 J'écoute...";
+                    this.elements.voiceStatus.classList.add('listening');
+                    this.startOscilloscope();
+                };
+
+                this.recognition.onresult = (event) => {
+                    const result = event.results[0];
+                    if (result.isFinal) {
+                        let spokenText = result[0].transcript.toLowerCase().trim();
+                        console.log('Detected speech:', spokenText);
+                        this.processVoiceResult(spokenText);
+                    }
+                };
+
+                this.recognition.onerror = (event) => {
+                    console.error('Speech recognition error:', event.error);
+                    this.recognitionState = 'stopped';
+                    
+                    if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
+                        this.showFeedback("Accès au microphone refusé. Activez-le dans les paramètres du navigateur.", 'error');
+                    } else if (event.error === 'no-speech') {
+                        this.showFeedback("Aucune parole détectée. Parlez plus fort.", 'info');
+                    } else if (event.error === 'network') {
+                        this.showFeedback("Erreur réseau. Vérifiez votre connexion.", 'error');
+                    } else {
+                        this.showFeedback("Je n'ai pas bien entendu 😢 Essaie encore!", 'error');
+                    }
+                    
+                    this.stopListening();
+                };
+
+                this.recognition.onend = () => {
+                    this.recognitionState = 'stopped';
+                    if (this.state.isListening) {
+                        // Recognition ended unexpectedly, clean up
+                        this.stopListening();
+                    }
+                };
+            }
+
+            setupEventListeners() {
+                this.setupVoiceButtonListeners();
+                
+                this.elements.newWord.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        this.addCustomWord();
+                    }
+                });
+
+                document.addEventListener('keydown', (e) => this.handleKeyboardShortcuts(e));
+                document.addEventListener('visibilitychange', () => {
+                    if (document.hidden && this.state.isListening) {
+                        this.stopListening();
+                    }
+                });
+            }
+
+            setupVoiceButtonListeners() {
+                let pressTimer = null;
+                let startX = 0, startY = 0;
+                let movedTooFar = false;
+
+                const onStart = (e) => {
+                    if (this.state.isListening || this.state.isProcessing || !this.recognition) return;
+                    e.preventDefault();
+                    movedTooFar = false;
+                    
+                    if (e.type.startsWith('touch')) {
+                        startX = e.touches[0].clientX;
+                        startY = e.touches[0].clientY;
+                    }
+                    
+                    pressTimer = setTimeout(() => {
+                        if (!movedTooFar) this.startListening();
+                    }, this.CONFIG.LONG_PRESS_DURATION);
+                };
+
+                const onEnd = (e) => {
+                    if (!this.recognition) return;
+                    if (pressTimer) clearTimeout(pressTimer);
+                    pressTimer = null;
+                    if (this.state.isListening) this.stopListening();
+                };
+
+                const onMove = (e) => {
+                    if (!pressTimer || movedTooFar || !e.type.startsWith('touch')) return;
+                    const touch = e.touches[0];
+                    const deltaX = Math.abs(touch.clientX - startX);
+                    const deltaY = Math.abs(touch.clientY - startY);
+                    if (deltaX > this.CONFIG.TAP_THRESHOLD || deltaY > this.CONFIG.TAP_THRESHOLD) {
+                        movedTooFar = true;
+                        if (pressTimer) clearTimeout(pressTimer);
+                        pressTimer = null;
+                        if (this.state.isListening) this.stopListening();
+                    }
+                };
+
+                this.elements.voiceButton.addEventListener('mousedown', onStart);
+                this.elements.voiceButton.addEventListener('mouseup', onEnd);
+                this.elements.voiceButton.addEventListener('mouseleave', onEnd);
+                this.elements.voiceButton.addEventListener('touchstart', onStart, { passive: false });
+                this.elements.voiceButton.addEventListener('touchend', onEnd, { passive: false });
+                this.elements.voiceButton.addEventListener('touchcancel', onEnd, { passive: false });
+                this.elements.voiceButton.addEventListener('touchmove', onMove, { passive: false });
+            }
+
+            setupOscilloscope() {
+                const canvas = this.oscilloscope.canvas;
+                const ctx = this.oscilloscope.ctx;
+                
+                canvas.width = canvas.offsetWidth * (window.devicePixelRatio || 1);
+                canvas.height = canvas.offsetHeight * (window.devicePixelRatio || 1);
+                ctx.scale(window.devicePixelRatio || 1, window.devicePixelRatio || 1);
+                
+                this.drawOscilloscopeGrid();
+            }
+
+            drawOscilloscopeGrid() {
+                const ctx = this.oscilloscope.ctx;
+                const canvas = this.oscilloscope.canvas;
+                const width = canvas.offsetWidth;
+                const height = canvas.offsetHeight;
+                
+                ctx.clearRect(0, 0, width, height);
+                
+                // Draw grid
+                ctx.strokeStyle = 'hsla(233, 50%, 50%, 0.2)';
+                ctx.lineWidth = 0.5;
+                
+                // Vertical lines
+                for (let x = 0; x <= width; x += 20) {
+                    ctx.beginPath();
+                    ctx.moveTo(x, 0);
+                    ctx.lineTo(x, height);
+                    ctx.stroke();
+                }
+                
+                // Horizontal lines
+                for (let y = 0; y <= height; y += 20) {
+                    ctx.beginPath();
+                    ctx.moveTo(0, y);
+                    ctx.lineTo(width, y);
+                    ctx.stroke();
+                }
+                
+                // Center line
+                ctx.strokeStyle = 'hsla(233, 70%, 65%, 0.5)';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(0, height / 2);
+                ctx.lineTo(width, height / 2);
+                ctx.stroke();
+            }
+
+            startOscilloscope() {
+                if (!this.audioContext) {
+                    navigator.mediaDevices.getUserMedia({ audio: true })
+                        .then(stream => {
+                            this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                            this.analyser = this.audioContext.createAnalyser();
+                            this.analyser.fftSize = 2048;
+                            
+                            const source = this.audioContext.createMediaStreamSource(stream);
+                            source.connect(this.analyser);
+                            
+                            this.dataArray = new Uint8Array(this.analyser.frequencyBinCount);
+                            this.drawOscilloscope();
+                        })
+                        .catch(err => {
+                            console.error('Microphone access error:', err);
+                        });
+                } else {
+                    this.drawOscilloscope();
+                }
+            }
+
+            drawOscilloscope() {
+                if (!this.state.isListening || !this.analyser) {
+                    this.drawOscilloscopeGrid();
+                    return;
+                }
+
+                const ctx = this.oscilloscope.ctx;
+                const canvas = this.oscilloscope.canvas;
+                const width = canvas.offsetWidth;
+                const height = canvas.offsetHeight;
+                
+                this.analyser.getByteTimeDomainData(this.dataArray);
+                
+                this.drawOscilloscopeGrid();
+                
+                // Draw waveform
+                ctx.strokeStyle = '#667eea';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                
+                const sliceWidth = width / this.dataArray.length;
+                let x = 0;
+                
+                for (let i = 0; i < this.dataArray.length; i++) {
+                    const v = this.dataArray[i] / 128.0;
+                    const y = (v * height) / 2;
+                    
+                    if (i === 0) {
+                        ctx.moveTo(x, y);
+                    } else {
+                        ctx.lineTo(x, y);
+                    }
+                    
+                    x += sliceWidth;
+                }
+                
+                ctx.stroke();
+                
+                // Add glow effect for active input
+                const amplitude = this.getAudioAmplitude();
+                if (amplitude > 0.1) {
+                    ctx.shadowColor = '#667eea';
+                    ctx.shadowBlur = 10;
+                    ctx.stroke();
+                    ctx.shadowBlur = 0;
+                }
+                
+                if (this.state.isListening) {
+                    this.oscilloscope.animationId = requestAnimationFrame(() => this.drawOscilloscope());
+                }
+            }
+
+            getAudioAmplitude() {
+                if (!this.dataArray) return 0;
+                
+                let sum = 0;
+                for (let i = 0; i < this.dataArray.length; i++) {
+                    const amplitude = Math.abs(this.dataArray[i] - 128) / 128;
+                    sum += amplitude;
+                }
+                return sum / this.dataArray.length;
+            }
+
+            stopOscilloscope() {
+                if (this.oscilloscope.animationId) {
+                    cancelAnimationFrame(this.oscilloscope.animationId);
+                    this.oscilloscope.animationId = null;
+                }
+                this.drawOscilloscopeGrid();
+            }
+
+            initializeUI() {
+                this.addCustomWordsToLevels();
+                this.displayCustomWords();
+                this.updateStats();
+                this.updateProgress();
+                this.displayCurrentWord();
+                this.startSessionTimer();
+            }
+
+            addCustomWordsToLevels() {
+                if (this.customWords.length > 0) {
+                    this.levels[4] = [...this.customWords];
+                } else {
+                    delete this.levels[4];
+                }
+            }
+
+            displayCustomWords() {
+                const container = this.elements.customWords;
+                container.innerHTML = '';
+                
+                this.customWords.forEach((wordObj, index) => {
+                    const tag = document.createElement('div');
+                    tag.className = 'custom-word-tag';
+                    tag.innerHTML = `
+                        <span>${wordObj.word}</span>
+                        <button class="remove-word" onclick="app.removeCustomWord(${index})">×</button>
+                    `;
+                    container.appendChild(tag);
+                });
+            }
+
+            displayCurrentWord() {
+                const wordDisplay = this.elements.wordDisplay;
+                wordDisplay.innerHTML = '';
+                
+                const currentWord = this.getCurrentWord();
+                if (currentWord) {
+                    currentWord.syllables.forEach((syllable) => {
+                        const syllableElement = document.createElement('div');
+                        syllableElement.className = 'syllable';
+                        syllableElement.textContent = syllable;
+                        syllableElement.onclick = () => this.speakSyllable(syllable);
+                        wordDisplay.appendChild(syllableElement);
+                    });
+                    
+                    this.state.problemStartTime = Date.now();
+                }
+            }
+
+            getCurrentWord() {
+                return this.levels[this.state.currentLevel]?.[this.state.currentIndex];
+            }
+
+            speakSyllable(syllable) {
+                if (!this.synth) return;
+                
+                const utterance = new SpeechSynthesisUtterance(syllable);
+                utterance.lang = 'fr-FR';
+                utterance.rate = this.CONFIG.SPEECH_RATE;
+                this.synth.speak(utterance);
+
+                // Visual feedback
+                const syllables = document.querySelectorAll('.syllable');
+                syllables.forEach(el => {
+                    if (el.textContent === syllable) {
+                        el.classList.add('active');
+                        setTimeout(() => el.classList.remove('active'), 300);
+                    }
+                });
+            }
+
+            speakCurrentWord() {
+                const currentWord = this.getCurrentWord();
+                if (!currentWord || !this.synth) return;
+                
+                const utterance = new SpeechSynthesisUtterance(currentWord.word);
+                utterance.lang = 'fr-FR';
+                utterance.rate = this.CONFIG.SPEECH_RATE;
+                this.synth.speak(utterance);
+            }
+
+            addCustomWord() {
+                const input = this.elements.newWord;
+                const word = input.value.trim().toLowerCase();
+                
+                if (word && word.length >= 2) {
+                    const syllables = this.splitIntoSyllables(word);
+                    const newWord = {
+                        word: word,
+                        syllables: syllables,
+                        alternates: [word, `le ${word}`, `la ${word}`, `un ${word}`, `une ${word}`]
+                    };
+                    
+                    this.customWords.push(newWord);
+                    localStorage.setItem('frenchApp_customWords', JSON.stringify(this.customWords));
+                    input.value = '';
+                    
+                    this.addCustomWordsToLevels();
+                    this.displayCustomWords();
+                    
+                    this.showFeedback(`✅ "${word}" ajouté!`, 'success');
+                }
+            }
+
+            removeCustomWord(index) {
+                this.customWords.splice(index, 1);
+                localStorage.setItem('frenchApp_customWords', JSON.stringify(this.customWords));
+                this.addCustomWordsToLevels();
+                this.displayCustomWords();
+            }
+
+            splitIntoSyllables(word) {
+                const vowels = 'aeiouyàáâäèéêëìíîïòóôöùúûü';
+                let syllables = [];
+                let currentSyllable = '';
+                
+                for (let i = 0; i < word.length; i++) {
+                    currentSyllable += word[i];
+                    
+                    if (vowels.includes(word[i].toLowerCase())) {
+                        if (i < word.length - 1) {
+                            const nextChar = word[i + 1];
+                            if (!vowels.includes(nextChar.toLowerCase())) {
+                                if (i < word.length - 2 && vowels.includes(word[i + 2].toLowerCase())) {
+                                    currentSyllable += nextChar;
+                                    i++;
+                                }
+                            }
+                        }
+                        syllables.push(currentSyllable);
+                        currentSyllable = '';
+                    }
+                }
+                
+                if (currentSyllable) {
+                    if (syllables.length > 0) {
+                        syllables[syllables.length - 1] += currentSyllable;
+                    } else {
+                        syllables.push(currentSyllable);
+                    }
+                }
+                
+                return syllables.length > 0 ? syllables : [word];
+            }
+
+            startListening() {
+                if (!this.recognition || this.state.isListening || this.state.isProcessing) return;
+                
+                // Check if recognition is already running
+                try {
+                    // Force stop any existing recognition first
+                    if (this.recognitionState === 'running') {
+                        this.recognition.abort();
+                        this.recognitionState = 'stopped';
+                        // Wait a bit before starting again
+                        setTimeout(() => this.startListening(), 100);
+                        return;
+                    }
+                    
+                    this.recognitionState = 'starting';
+                    this.recognition.start();
+                    this.state.voiceUsageCount++;
+                } catch (error) {
+                    console.error('Recognition start error:', error);
+                    this.recognitionState = 'stopped';
+                    
+                    if (error.name === 'InvalidStateError') {
+                        // Recognition is already running, abort and retry
+                        try {
+                            this.recognition.abort();
+                            setTimeout(() => this.startListening(), 200);
+                        } catch (abortError) {
+                            console.error('Recognition abort error:', abortError);
+                            this.showFeedback('Erreur de reconnaissance vocale. Essayez à nouveau.', 'error');
+                        }
+                    } else {
+                        this.showFeedback('Impossible de démarrer la reconnaissance vocale.', 'error');
+                    }
+                }
+            }
+
+            stopListening() {
+                this.state.isListening = false;
+                this.state.isProcessing = false;
+                this.elements.voiceButton.classList.remove('listening', 'processing');
+                this.elements.voiceWave.classList.add('hidden');
+                this.elements.voiceStatus.textContent = '📱 Appuyez et maintenez pour parler';
+                this.elements.voiceStatus.classList.remove('listening', 'processing');
+                this.stopOscilloscope();
+                
+                if (this.recognition && this.recognitionState === 'running') {
+                    try {
+                        this.recognitionState = 'stopping';
+                        this.recognition.stop();
+                    } catch (error) {
+                        console.error('Recognition stop error:', error);
+                        // Force abort if stop fails
+                        try {
+                            this.recognition.abort();
+                        } catch (abortError) {
+                            console.error('Recognition abort error:', abortError);
+                        }
+                        this.recognitionState = 'stopped';
+                    }
+                }
+            }
+
+            processVoiceResult(spokenText) {
+                const normalizedSpoken = this.normalizeString(spokenText);
+                const currentWord = this.getCurrentWord();
+                
+                if (!currentWord) return;
+                
+                const alternates = currentWord.alternates.map(alt => this.normalizeString(alt));
+                
+                const matched = alternates.some(alt => 
+                    normalizedSpoken.includes(alt) || this.calculateSimilarity(normalizedSpoken, alt) > 0.8
+                );
+                
+                if (matched) {
+                    this.handleCorrectAnswer();
+                } else {
+                    this.handleIncorrectAnswer();
+                }
+            }
+
+            normalizeString(str) {
+                return str
+                    .normalize('NFD')
+                    .replace(/[\u0300-\u036f]/g, '')
+                    .replace(/[.,\/#!$%\^&\*;:{}=\-_`~()?]/g, "")
+                    .replace(/\s{2,}/g, " ")
+                    .trim();
+            }
+
+            calculateSimilarity(str1, str2) {
+                const a = str1.toLowerCase();
+                const b = str2.toLowerCase();
+                
+                if (a === b) return 1;
+                if (a.length === 0 || b.length === 0) return 0;
+                
+                const matrix = Array(b.length + 1).fill(null).map(() => Array(a.length + 1).fill(null));
+                
+                for (let i = 0; i <= a.length; i++) matrix[0][i] = i;
+                for (let j = 0; j <= b.length; j++) matrix[j][0] = j;
+                
+                for (let j = 1; j <= b.length; j++) {
+                    for (let i = 1; i <= a.length; i++) {
+                        const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+                        matrix[j][i] = Math.min(
+                            matrix[j][i - 1] + 1,
+                            matrix[j - 1][i] + 1,
+                            matrix[j - 1][i - 1] + cost
+                        );
+                    }
+                }
+                
+                return 1 - (matrix[b.length][a.length] / Math.max(a.length, b.length));
+            }
+
+            handleCorrectAnswer() {
+                const responseTime = Date.now() - this.state.problemStartTime;
+                
+                this.state.correctAnswers++;
+                this.state.streak++;
+                this.state.totalQuestions++;
+                
+                const baseScore = 10;
+                const timeBonus = Math.max(0, Math.floor((5000 - responseTime) / 1000));
+                const streakBonus = Math.min(this.state.streak * 2, 20);
+                const points = baseScore + timeBonus + streakBonus;
+                this.state.score += points;
+                
+                if (this.state.streak > this.state.bestStreak) {
+                    this.state.bestStreak = this.state.streak;
+                }
+                
+                const syllables = document.querySelectorAll('.syllable');
+                syllables.forEach(syllable => syllable.classList.add('correct'));
+                
+                this.showFeedback(`🎉 Fantastique! +${points} points!`, 'success');
+                this.triggerHapticFeedback();
+                
+                if (this.state.streak >= 3 && this.state.streak % 3 === 0) {
+                    this.showConfetti();
+                }
+                
+                if (responseTime < 3000) this.unlockAchievement('SPEED_DEMON');
+                if (this.state.correctAnswers === 1) this.unlockAchievement('FIRST_CORRECT');
+                
+                this.checkAchievements();
+                this.updateStats();
+                
+                setTimeout(() => {
+                    this.nextWord();
+                }, 2000);
+            }
+
+            handleIncorrectAnswer() {
+                this.state.streak = 0;
+                this.state.totalQuestions++;
+                
+                this.showFeedback("😊 Presque! Essaie encore!", 'error');
+                
+                setTimeout(() => {
+                    this.speakCurrentWord();
+                }, 1000);
+                
+                this.updateStats();
+            }
+
+            nextWord() {
+                this.state.sessionQuestions++;
+                this.state.currentIndex++;
+                
+                if (this.state.currentIndex >= this.levels[this.state.currentLevel].length) {
+                    if (this.state.currentLevel < Object.keys(this.levels).length) {
+                        this.state.currentLevel++;
+                        this.state.currentIndex = 0;
+                        this.elements.level.textContent = this.state.currentLevel;
+                        this.showFeedback("🌟 Niveau suivant! Super!", 'info');
+                    } else {
+                        this.endSession();
+                        return;
+                    }
+                }
+                
+                this.updateProgress();
+                this.displayCurrentWord();
+            }
+
+            endSession() {
+                const accuracy = this.state.totalQuestions > 0 
+                    ? Math.round((this.state.correctAnswers / this.state.totalQuestions) * 100) 
+                    : 0;
+                
+                if (accuracy === 100 && this.state.sessionQuestions === this.CONFIG.SESSION_LENGTH) {
+                    this.unlockAchievement('PERFECT_SESSION');
+                }
+                
+                this.saveStats();
+                this.showFeedback('🏆 Session terminée! Excellent travail!', 'success');
+                this.showConfetti(100);
+            }
+
+            resetProgress() {
+                this.state.currentLevel = 1;
+                this.state.currentIndex = 0;
+                this.state.sessionQuestions = 0;
+                this.state.score = 0;
+                this.state.streak = 0;
+                this.state.totalQuestions = 0;
+                this.state.correctAnswers = 0;
+                
+                this.elements.level.textContent = this.state.currentLevel;
+                this.updateStats();
+                this.updateProgress();
+                this.displayCurrentWord();
+                this.startSessionTimer();
+            }
+
+            checkAchievements() {
+                if (this.state.streak === 5) this.unlockAchievement('STREAK_5');
+                else if (this.state.streak === 10) this.unlockAchievement('STREAK_10');
+                if (this.state.voiceUsageCount >= 10) this.unlockAchievement('VOICE_MASTER');
+            }
+
+            unlockAchievement(id) {
+                if (this.state.achievements.has(id) || !this.CONFIG.ACHIEVEMENTS[id]) return;
+                
+                this.state.achievements.add(id);
+                localStorage.setItem('frenchApp_achievements', JSON.stringify(Array.from(this.state.achievements)));
+                this.showAchievementToast(id);
+            }
+
+            showAchievementToast(id) {
+                const achievement = this.CONFIG.ACHIEVEMENTS[id];
+                this.elements.achievementTitle.textContent = achievement.name;
+                this.elements.achievementDesc.textContent = achievement.description;
+                
+                this.elements.achievementToast.classList.remove('hidden');
+                requestAnimationFrame(() => this.elements.achievementToast.classList.add('visible'));
+                
+                clearTimeout(this.timers.achievement);
+                this.timers.achievement = setTimeout(() => {
+                    this.elements.achievementToast.classList.remove('visible');
+                    setTimeout(() => this.elements.achievementToast.classList.add('hidden'), 300);
+                }, 3500);
+            }
+
+            showConfetti(count = this.CONFIG.CONFETTI_COUNT) {
+                this.elements.confettiContainer.innerHTML = '';
+                
+                for (let i = 0; i < count; i++) {
+                    const confetti = document.createElement('div');
+                    confetti.className = 'confetti';
+                    confetti.style.left = `${Math.random() * 100}%`;
+                    confetti.style.animationDelay = `${Math.random() * 0.5}s`;
+                    const hue = Math.random() * 360;
+                    confetti.style.backgroundColor = `hsl(${hue}, 90%, 65%)`;
+                    if (i % 3 === 0) confetti.style.borderRadius = '50%';
+                    if (i % 4 === 0) { 
+                        confetti.style.width = '5px'; 
+                        confetti.style.height = '15px'; 
+                    }
+                    this.elements.confettiContainer.appendChild(confetti);
+                }
+                
+                setTimeout(() => {
+                    this.elements.confettiContainer.innerHTML = '';
+                }, this.CONFIG.CONFETTI_DURATION + 500);
+            }
+
+            showFeedback(message, type = 'info', duration = this.CONFIG.FEEDBACK_DURATION) {
+                clearTimeout(this.timers.feedback);
+                this.elements.feedback.textContent = message;
+                this.elements.feedback.className = `feedback-display visible ${type}`;
+                this.timers.feedback = setTimeout(() => this.clearFeedback(), duration);
+            }
+
+            clearFeedback() {
+                this.elements.feedback.classList.remove('visible');
+                setTimeout(() => {
+                    if (!this.elements.feedback.classList.contains('visible')) {
+                        this.elements.feedback.textContent = '';
+                        this.elements.feedback.className = 'feedback-display';
+                    }
+                }, 300);
+            }
+
+            updateStats() {
+                this.elements.score.textContent = this.state.score;
+                this.elements.streak.textContent = this.state.streak;
+                const accuracy = this.state.totalQuestions > 0 
+                    ? Math.round((this.state.correctAnswers / this.state.totalQuestions) * 100) 
+                    : 100;
+                this.elements.accuracy.textContent = `${accuracy}%`;
+            }
+
+            updateProgress() {
+                const progress = (this.state.currentIndex / this.levels[this.state.currentLevel].length) * 100;
+                this.elements.progressBar.style.width = `${progress}%`;
+            }
+
+            startSessionTimer() {
+                if (this.timers.session) clearInterval(this.timers.session);
+                this.state.sessionStartTime = Date.now();
+                this.elements.timer.textContent = '0:00';
+                
+                this.timers.session = setInterval(() => {
+                    const elapsed = Math.floor((Date.now() - this.state.sessionStartTime) / 1000);
+                    const minutes = Math.floor(elapsed / 60);
+                    const seconds = elapsed % 60;
+                    this.elements.timer.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+                }, 1000);
+            }
+
+            saveStats() {
+                localStorage.setItem('frenchApp_stats', JSON.stringify({
+                    bestStreak: this.state.bestStreak,
+                    totalScore: this.state.score
+                }));
+            }
+
+            triggerHapticFeedback() {
+                if ('vibrate' in navigator) {
+                    try {
+                        navigator.vibrate([20, 50, 20]);
+                    } catch (e) {
+                        // Ignore vibration errors
+                    }
+                }
+            }
+
+            handleKeyboardShortcuts(e) {
+                if (e.target.tagName === 'INPUT') return;
+                
+                if (e.key === ' ' && this.recognition) {
+                    e.preventDefault();
+                    if (this.state.isListening) {
+                        this.stopListening();
+                    } else {
+                        this.startListening();
+                    }
+                } else if (e.key === 'Enter') {
+                    this.nextWord();
+                } else if (e.key.toLowerCase() === 'l') {
+                    this.speakCurrentWord();
+                }
+            }
+        }
+
+        // Global functions for inline event handlers
+        function addCustomWord() {
+            window.app.addCustomWord();
+        }
+
+        function speakCurrentWord() {
+            window.app.speakCurrentWord();
+        }
+
+        function nextWord() {
+            window.app.nextWord();
+        }
+
+        function resetProgress() {
+            window.app.resetProgress();
+        }
+
+        // Initialize app when DOM is loaded
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => {
+                window.app = new FrenchLearningApp();
+            });
+        } else {
+            window.app = new FrenchLearningApp();
+        }
+    </script>
+</body>
+</html>
